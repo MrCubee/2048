@@ -16,9 +16,21 @@ int main()
 {
     srand(time(NULL));
     createGame();
+    char c;
     while (ended == 0) {
-        char c = getchar();
+        c = getchar();
         switch (c) {
+            case 'h':
+                printf("\e[1;1H\e[2J");
+                printf("Voici comment jouer : \n");
+                printf("    8    \n");
+                printf("    ^    \n");
+                printf("4 <   > 6\n");
+                printf("    v    \n");
+                printf("    2    \n");
+                printf("Pour arrêter la game > 5\n");
+                printf("Une fois terminer, tapez 0\n");
+                break;
             case '2':
                 move(0, 1);
                 break;
@@ -33,7 +45,7 @@ int main()
                 break;
             case '5':
                 return EXIT_SUCCESS;
-            default:
+            case '0':
                 printUI();
                 break;
         }
@@ -55,6 +67,7 @@ void createGame()
 void printUI()
 {
     printf("\e[1;1H\e[2J");
+    printf("Comment jouer ? Tapez h ;)");
     printf("\\ & & & &\n");
     for (int y = 0; y < 4; ++y) {
         printf("&");
@@ -91,7 +104,6 @@ void genPosition()
 
 void move(int x, int y)
 {
-    clock_t start = clock();
     for (int X = (x!=-1?3:0); x!=-1?X>=0:X<4; x!=-1?--X:++X) {
         for (int Y = (y==-1?3:0); y==-1?Y>=0:Y<4; y==-1?--Y:++Y) {
             int value = board[X][Y];
@@ -108,11 +120,13 @@ void move(int x, int y)
                     && yTemp >= 0
                     && (board[xTemp][yTemp] == value
                         || board[xTemp][yTemp] == 0)) {
-                    board[xTemp-x][yTemp-y] = 0;
+                    board[xTemp - x][yTemp - y] = 0;
                     board[xTemp][yTemp] += value;
                     value = board[xTemp][yTemp];
-                    if(value >= 2048)
+                    if (value >= 2048) {
                         end(1);
+                        return;
+                    }
                 } else
                     break;
             } while (1);
@@ -120,8 +134,6 @@ void move(int x, int y)
     }
     genPosition();
     printUI();
-    clock_t result = clock() - start;
-    printf("Les opérations ont pris %ld millis !\n", result);
 }
 
 void end(int win)
