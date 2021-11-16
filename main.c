@@ -10,7 +10,7 @@ void createGame();
 void printUI();
 void genPosition();
 void move(int x, int y);
-void end();
+void end(int win);
 
 int main()
 {
@@ -33,6 +33,9 @@ int main()
                 break;
             case '5':
                 return EXIT_SUCCESS;
+            default:
+                printUI();
+                break;
         }
     }
     return EXIT_SUCCESS;
@@ -51,6 +54,7 @@ void createGame()
 
 void printUI()
 {
+    printf("\e[1;1H\e[2J");
     printf("\\ & & & &\n");
     for (int y = 0; y < 4; ++y) {
         printf("&");
@@ -71,7 +75,7 @@ void genPosition()
         for (int y = 0; y < 4; ++y)
             number += (board[x][y] != 0);
     if (number == 16) {
-        end();
+        end(0);
         return;
     }
     do {
@@ -87,34 +91,44 @@ void genPosition()
 
 void move(int x, int y)
 {
+    clock_t start = clock();
     for (int X = (x!=-1?3:0); x!=-1?X>=0:X<4; x!=-1?--X:++X) {
         for (int Y = (y==-1?3:0); y==-1?Y>=0:Y<4; y==-1?--Y:++Y) {
             int value = board[X][Y];
+            if (value == 0)
+                continue;
             int xTemp = X;
             int yTemp = Y;
-            if (value != 0) {
-                int finish = 0;
-                do {
-                    xTemp+=x;
-                    yTemp+=y;
-                    if (xTemp < 4
-                        && xTemp >= 0
-                        && yTemp < 4
-                        && yTemp >= 0
-                        && (board[xTemp][yTemp] == value
-                            || board[xTemp][yTemp] == 0)) {
-                        board[xTemp-x][yTemp-y] = 0;
-                        board[xTemp][yTemp] += value;
-                    } else
-                        finish = 1;
-                } while (finish == 0);
-            }
+            do {
+                xTemp+=x;
+                yTemp+=y;
+                if (xTemp < 4
+                    && xTemp >= 0
+                    && yTemp < 4
+                    && yTemp >= 0
+                    && (board[xTemp][yTemp] == value
+                        || board[xTemp][yTemp] == 0)) {
+                    board[xTemp-x][yTemp-y] = 0;
+                    board[xTemp][yTemp] += value;
+                    value = board[xTemp][yTemp];
+                    if(value >= 2048)
+                        end(1);
+                } else
+                    break;
+            } while (1);
         }
     }
     genPosition();
     printUI();
+    clock_t result = clock() - start;
+    printf("Les opérations ont pris %ld millis !\n", result);
 }
 
-void end() {
+void end(int win)
+{
     ended = 1;
+    if (win == 0)
+        printf("VOUS AVEZ PERDU !\n");
+    else
+        printf("VOUS AVEZ GAGNE !\n");
 }
