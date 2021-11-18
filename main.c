@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 int gNumbers[] = {2, 4};
 int board[4][4];
@@ -8,8 +9,8 @@ int ended = 0;
 
 void createGame();
 void printUI();
-void genPosition();
-void move(int x, int y);
+void genPosition(int type[4][4]);
+void move(int x, int y, int type[4][4]);
 void end(int win);
 void aiPlay();
 
@@ -33,16 +34,16 @@ int main()
                 printf("Une fois terminer, tapez 0\n");
                 break;
             case '2':
-                move(0, 1);
+                move(0, 1, board);
                 break;
             case '6':
-                move(1, 0);
+                move(1, 0, board);
                 break;
             case '8':
-                move(0, -1);
+                move(0, -1, board);
                 break;
             case '4':
-                move(-1, 0);
+                move(-1, 0, board);
                 break;
             case '5':
                 return EXIT_SUCCESS;
@@ -64,7 +65,7 @@ void createGame()
             board[x][y] = 0;
         }
     }
-    genPosition();
+    genPosition(board);
     printUI();
 }
 
@@ -85,12 +86,12 @@ void printUI()
     }
 }
 
-void genPosition()
+void genPosition(int type[4][4])
 {
     int number = 0;
     for (int x = 0; x < 4; ++x)
         for (int y = 0; y < 4; ++y)
-            number += (board[x][y] != 0);
+            number += (type[x][y] != 0);
     if (number == 16) {
         end(0);
         return;
@@ -99,8 +100,8 @@ void genPosition()
         int x = rand() % 4;
         int y = rand() % 4;
         int number = rand() % 2;
-        if (board[x][y] == 0) {
-            board[x][y] = gNumbers[number];
+        if (type[x][y] == 0) {
+            type[x][y] = gNumbers[number];
             return;
         }
     } while (1);
@@ -116,12 +117,12 @@ int isValid(int x, int y, int value)
                || board[x][y] == 0);
 }
 
-void move(int x, int y)
+void move(int x, int y, int type[4][4])
 {
     if (ended) return;
     for (int X = (x!=-1?3:0); x!=-1?X>=0:X<4; x!=-1?--X:++X) {
         for (int Y = (y==-1?3:0); y==-1?Y>=0:Y<4; y==-1?--Y:++Y) {
-            int value = board[X][Y];
+            int value = type[X][Y];
             if (value == 0)
                 continue;
             int xTemp = X;
@@ -130,9 +131,9 @@ void move(int x, int y)
                 xTemp+=x;
                 yTemp+=y;
                 if (isValid(xTemp, yTemp, value)) {
-                    board[xTemp - x][yTemp - y] = 0;
-                    board[xTemp][yTemp] += value;
-                    value = board[xTemp][yTemp];
+                    type[xTemp - x][yTemp - y] = 0;
+                    type[xTemp][yTemp] += value;
+                    value = type[xTemp][yTemp];
                     if (value >= 2048) {
                         end(1);
                         return;
@@ -142,7 +143,7 @@ void move(int x, int y)
             } while (1);
         }
     }
-    genPosition();
+    genPosition(type);
     printUI();
 }
 
@@ -155,16 +156,16 @@ void end(int win)
         printf("VOUS AVEZ GAGNE !\n");
 }
 
-void aiPlay() {
+void aiPlay()
+{
     int moves[4][2] = {{0, 1},{1, 0},{-1, 0},{0, -1}};
     int scores[4];
 
-    for (int i = 0; i < 4; ++i) {
-        move(moves[i][0], moves[i][1]);
-        scores[i] += 1;
+    int search_board[4][4];
+    strcpy(search_board, board);
 
-        for (int depth = 0; depth < 5; ++depth) {
-            int search_board[4][4];
-        }
+    for (int i = 0; i < 4; ++i) {
+        move(moves[i][0], moves[i][1], search_board);
+        scores[i] += 1;
     }
 }
